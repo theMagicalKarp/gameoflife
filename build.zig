@@ -21,6 +21,13 @@ pub fn build(b: *std.Build) void {
         }),
     });
 
+    const vaxis = b.dependency("vaxis", .{
+        .target = target,
+        .optimize = optimize,
+    });
+
+    exe.root_module.addImport("vaxis", vaxis.module("vaxis"));
+
     b.installArtifact(exe);
 
     const run_step = b.step("run", "Run the app");
