@@ -1,4 +1,5 @@
 const std = @import("std");
+pub const Point = @import("point.zig").Point;
 
 pub const Cell = enum {
     alive,
@@ -12,6 +13,37 @@ pub const Cell = enum {
             .dead => writer.print("Cell(dead)", .{}),
         };
     }
+};
+
+pub const Gliders = [_][5]Point(i32){
+    .{
+        Point(i32){ .x = 1, .y = -1 },
+        Point(i32){ .x = 1, .y = 0 },
+        Point(i32){ .x = 1, .y = 1 },
+        Point(i32){ .x = 0, .y = 1 },
+        Point(i32){ .x = -1, .y = -1 },
+    },
+    .{
+        Point(i32){ .x = -1, .y = -1 },
+        Point(i32){ .x = -1, .y = 0 },
+        Point(i32){ .x = -1, .y = 1 },
+        Point(i32){ .x = 0, .y = 1 },
+        Point(i32){ .x = 1, .y = -1 },
+    },
+    .{
+        Point(i32){ .x = 1, .y = -1 },
+        Point(i32){ .x = 0, .y = -1 },
+        Point(i32){ .x = -1, .y = -1 },
+        Point(i32){ .x = -1, .y = 0 },
+        Point(i32){ .x = 1, .y = 1 },
+    },
+    .{
+        Point(i32){ .x = -1, .y = -1 },
+        Point(i32){ .x = 0, .y = -1 },
+        Point(i32){ .x = 1, .y = -1 },
+        Point(i32){ .x = 1, .y = 0 },
+        Point(i32){ .x = -1, .y = 1 },
+    },
 };
 
 test "Cell: validate formatting" {
