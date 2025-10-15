@@ -34,6 +34,10 @@ pub fn Point(comptime T: type) type {
                 .{ .x = this.x + 1, .y = this.y + 1 },
             };
         }
+
+        pub fn add(this: Self, value: Self) Self {
+            return Self{ .x = this.x + value.x, .y = this.y + value.y };
+        }
     };
 }
 

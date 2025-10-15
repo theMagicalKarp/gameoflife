@@ -42,6 +42,17 @@ pub fn main() !void {
                         break;
                     } else if (key.matches('q', .{})) {
                         break;
+                    } else if (key.matches('c', .{})) {
+                        simulation.clear();
+                    } else if (key.matches('g', .{})) {
+                        const win = vx.window();
+                        const glider = gameoflife.Gliders[
+                            std.crypto.random.intRangeLessThan(usize, 0, gameoflife.Gliders.len)
+                        ];
+                        try simulation.spawn(&glider, gameoflife.Point(i32){
+                            .x = std.crypto.random.intRangeLessThan(i32, 0, win.width - 2),
+                            .y = std.crypto.random.intRangeLessThan(i32, 0, win.height - 2),
+                        });
                     } else if (key.matches('r', .{})) {
                         const win = vx.window();
                         try simulation.generate(
