@@ -12,7 +12,7 @@ written to learn [Zig](https://ziglang.org/).
 ## 🧩 What is Conway’s Game of Life?
 
 Conway’s Game of Life is a cellular automaton devised by mathematician John
-Conway in 1970. It’s not a traditional game , there are no players, but a
+Conway in 1970. It’s not a traditional game, there are no players, but a
 simulation that evolves over time based on simple rules.
 
 Each cell on the grid is either alive or dead. At every tick _(generation)_, all
@@ -22,7 +22,7 @@ cells update simultaneously based on their neighbors:
 - A live cell with 2 or 3 neighbors survives.
 - All other live cells die _(loneliness or overcrowding)_.
 
-Despite its simplicity, the system exhibits complex, emergent behavior —
+Despite its simplicity, the system exhibits complex, emergent behavior,
 patterns that move, replicate, and even compute.
 
 ## ⚙️ Requirements
