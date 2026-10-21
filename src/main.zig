@@ -8,34 +8,36 @@ const Event = union(enum) {
     focus_in,
 };
 
-pub fn main() !void {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer std.debug.assert(gpa.deinit() == .ok);
-    const allocator = gpa.allocator();
+pub fn main(init: std.process.Init) !void {
+    const io = init.io;
+    const allocator = init.gpa;
+    const random_source: std.Random.IoSource = .{ .io = io };
+    const random = random_source.interface();
 
     var buffer: [1024]u8 = undefined;
-    var tty = try vaxis.Tty.init(&buffer);
+    var tty = try vaxis.Tty.init(io, &buffer);
     defer tty.deinit();
 
-    var screen_buffer = std.io.Writer.Allocating.init(allocator);
+    var screen_buffer = std.Io.Writer.Allocating.init(allocator);
     defer screen_buffer.deinit();
 
-    var vx = try vaxis.init(allocator, .{});
+    var vx = try vaxis.init(io, allocator, init.environ_map, .{});
     defer vx.deinit(allocator, tty.writer());
 
-    var loop: vaxis.Loop(Event) = .{ .tty = &tty, .vaxis = &vx };
-    try loop.init();
+    var loop: vaxis.Loop(Event) = .init(io, &tty, &vx);
+    try loop.installResizeHandler();
+    defer loop.uninstallResizeHandler();
     try loop.start();
     defer loop.stop();
 
     try vx.enterAltScreen(tty.writer());
-    try vx.queryTerminal(tty.writer(), 1 * std.time.ns_per_s);
+    try vx.queryTerminal(tty.writer(), .fromSeconds(1));
 
     var simulation = gameoflife.Simulation.new(allocator);
     defer simulation.deinit();
 
     while (true) {
-        if (loop.tryEvent()) |event| {
+        if (try loop.tryEvent()) |event| {
             switch (event) {
                 .key_press => |key| {
                     if (key.matches('c', .{ .ctrl = true })) {
@@ -47,16 +49,16 @@ pub fn main() !void {
                     } else if (key.matches('g', .{})) {
                         const win = vx.window();
                         const glider = gameoflife.Gliders[
-                            std.crypto.random.intRangeLessThan(usize, 0, gameoflife.Gliders.len)
+                            random.intRangeLessThan(usize, 0, gameoflife.Gliders.len)
                         ];
                         try simulation.spawn(&glider, gameoflife.Point(i32){
-                            .x = std.crypto.random.intRangeLessThan(i32, 0, win.width - 2),
-                            .y = std.crypto.random.intRangeLessThan(i32, 0, win.height - 2),
+                            .x = random.intRangeLessThan(i32, 0, win.width - 2),
+                            .y = random.intRangeLessThan(i32, 0, win.height - 2),
                         });
                     } else if (key.matches('r', .{})) {
                         const win = vx.window();
                         try simulation.generate(
-                            std.crypto.random,
+                            random,
                             gameoflife.Point(i32){ .x = 0, .y = 0 },
                             gameoflife.Point(i32){ .x = win.width - 2, .y = win.height - 2 },
                         );
@@ -69,7 +71,7 @@ pub fn main() !void {
                     if (simulation.isEmpty()) {
                         const win = vx.window();
                         try simulation.generate(
-                            std.crypto.random,
+                            random,
                             gameoflife.Point(i32){ .x = 0, .y = 0 },
                             gameoflife.Point(i32){ .x = win.width - 2, .y = win.height - 2 },
                         );
@@ -108,6 +110,6 @@ pub fn main() !void {
 
         _ = child.printSegment(.{ .text = screen_buffer.written() }, .{ .wrap = .grapheme });
         try vx.render(tty.writer());
-        std.Thread.sleep(30 * std.time.ns_per_ms);
+        try io.sleep(.fromMilliseconds(30), .awake);
     }
 }

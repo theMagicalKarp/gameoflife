@@ -137,7 +137,7 @@ test "Simulation: single live cell dies by underpopulation" {
 }
 
 test "Simulation: Verify print simple generation" {
-    var screen_buffer = std.io.Writer.Allocating.init(std.testing.allocator);
+    var screen_buffer = std.Io.Writer.Allocating.init(std.testing.allocator);
     defer screen_buffer.deinit();
 
     var sim = Simulation.new(std.testing.allocator);
@@ -183,7 +183,7 @@ test "Simulation: Verify print simple generation" {
 }
 
 test "Simulation: Verify blinker" {
-    var screen_buffer = std.io.Writer.Allocating.init(std.testing.allocator);
+    var screen_buffer = std.Io.Writer.Allocating.init(std.testing.allocator);
     defer screen_buffer.deinit();
 
     var sim = Simulation.new(std.testing.allocator);
@@ -239,7 +239,7 @@ test "Simulation: Verify blinker" {
 }
 
 test "Simulation: Verify glider" {
-    var screen_buffer = std.io.Writer.Allocating.init(std.testing.allocator);
+    var screen_buffer = std.Io.Writer.Allocating.init(std.testing.allocator);
     defer screen_buffer.deinit();
 
     var sim = Simulation.new(std.testing.allocator);
@@ -304,7 +304,7 @@ test "Simulation: Verify glider" {
 }
 
 test "Simulation: Verify block" {
-    var screen_buffer = std.io.Writer.Allocating.init(std.testing.allocator);
+    var screen_buffer = std.Io.Writer.Allocating.init(std.testing.allocator);
     defer screen_buffer.deinit();
 
     var sim = Simulation.new(std.testing.allocator);

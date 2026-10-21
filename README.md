@@ -9,7 +9,7 @@ written to learn [Zig](https://ziglang.org/).
   <img src="./docs/assets/example.gif" />
 </p>
 
-## 🧩 What is Conway’s Game of Life?
+## What is Conway’s Game of Life?
 
 Conway’s Game of Life is a cellular automaton devised by mathematician John
 Conway in 1970. It’s not a traditional game, there are no players, but a
@@ -25,22 +25,27 @@ cells update simultaneously based on their neighbors:
 Despite its simplicity, the system exhibits complex, emergent behavior,
 patterns that move, replicate, and even compute.
 
-## ⚙️ Requirements
+## Requirements
 
-- [Zig 0.15.1](https://ziglang.org/download/0.15.1/release-notes.html)
+- [mise](https://mise.jdx.dev/)
+- [Zig](https://ziglang.org/) 0.17.0 (pinned in `mise.toml`)
 
-## 🚀 Run / Test / Format
+## Run / Test / Format
 
 ```bash
-# build
-zig build run
+# build and run
+mise run run
 # test
-zig build test
-# format
-zig fmt .
+mise run test
+# check format
+mise run fmt
+# auto format
+mise run fix
+# run everything CI runs
+mise run check
 ```
 
-## 🎮 Interactive Commands
+## Interactive Commands
 
 | Key |               Action |
 | :-- | -------------------: |
