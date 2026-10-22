@@ -47,12 +47,13 @@ mise run check
 
 ## Interactive Commands
 
-| Key |               Action |
-| :-- | -------------------: |
-| `g` |  spawn random glider |
-| `c` |      clear the board |
-| `r` | reset to random seed |
-| `q` |                 quit |
-
-> [!TIP]
-> mash `g`, then sit back and enjoy the entropy.
+| Key     |               Action |
+| :------ | -------------------: |
+| `g`     |  spawn random glider |
+| `c`     |      clear the board |
+| `r`     | reset to random seed |
+| `space` |       pause / resume |
+| `→`     |             speed up |
+| `←`     |            slow down |
+| `click` |    draw cells (drag) |
+| `q`     |                 quit |
