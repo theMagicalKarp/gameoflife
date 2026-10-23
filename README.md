@@ -22,8 +22,8 @@ cells update simultaneously based on their neighbors:
 - A live cell with 2 or 3 neighbors survives.
 - All other live cells die _(loneliness or overcrowding)_.
 
-Despite its simplicity, the system exhibits complex, emergent behavior,
-patterns that move, replicate, and even compute.
+Despite its simplicity, the system exhibits complex, emergent behavior, patterns
+that move, replicate, and even compute.
 
 ## Requirements
 
@@ -43,6 +43,21 @@ mise run fmt
 mise run fix
 # run everything CI runs
 mise run check
+# record a new docs/assets/example.gif
+mise run gif
+```
+
+## Options
+
+| Flag             | Description                                                                 |
+| ---------------- | --------------------------------------------------------------------------- |
+| `--seed <n>`     | seed the world generator for a reproducible run                             |
+| `--headless`     | skip the terminal capability query and mouse setup (for headless recording) |
+| `--duration <s>` | exit on its own after `s` seconds                                           |
+| `-h`, `--help`   | print usage and exit                                                        |
+
+```bash
+mise run run -- --seed 42
 ```
 
 ## Interactive Commands

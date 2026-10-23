@@ -42,11 +42,70 @@ fn simulatedArea(win: vaxis.Window) struct { from: gameoflife.Point(i32), size: 
     };
 }
 
+const usage =
+    \\Usage: gameoflife [options]
+    \\
+    \\Options:
+    \\  --seed <n>      seed the world generator for a reproducible run
+    \\  --headless      skip the terminal capability query and mouse setup
+    \\  --duration <s>  exit on its own after s seconds
+    \\  -h, --help      print this help and exit
+    \\
+;
+
+/// Reports a bad command line and exits; runs before the terminal is set up, so nothing needs restoring.
+fn usageError(comptime fmt: []const u8, args: anytype) noreturn {
+    std.log.err(fmt, args);
+    std.debug.print("\n" ++ usage, .{});
+    std.process.exit(2);
+}
+
+const Options = struct {
+    /// Seed for the world generator; random when unset.
+    seed: ?u64 = null,
+    /// Skip querying the terminal for capabilities and enabling the mouse.
+    /// Headless terminals (e.g. `asciinema rec --headless`) never reply, which
+    /// stalls startup on a blank screen until the query times out.
+    headless: bool = false,
+    /// Exit on its own after this many seconds; runs until quit when unset.
+    duration: ?u32 = null,
+
+    fn parse(io: std.Io, args: std.process.Args, allocator: std.mem.Allocator) !Options {
+        var options: Options = .{};
+        var it = try args.iterateAllocator(allocator);
+        defer it.deinit();
+        _ = it.skip();
+
+        while (it.next()) |arg| {
+            if (std.mem.eql(u8, arg, "--seed")) {
+                const value = it.next() orelse usageError("--seed requires a value", .{});
+                options.seed = std.fmt.parseInt(u64, value, 10) catch
+                    usageError("invalid --seed value: {s}", .{value});
+            } else if (std.mem.eql(u8, arg, "--duration")) {
+                const value = it.next() orelse usageError("--duration requires a value", .{});
+                options.duration = std.fmt.parseInt(u32, value, 10) catch
+                    usageError("invalid --duration value: {s}", .{value});
+            } else if (std.mem.eql(u8, arg, "--headless")) {
+                options.headless = true;
+            } else if (std.mem.eql(u8, arg, "--help") or std.mem.eql(u8, arg, "-h")) {
+                try std.Io.File.stdout().writeStreamingAll(io, usage);
+                std.process.exit(0);
+            } else {
+                usageError("unknown argument: {s}", .{arg});
+            }
+        }
+        return options;
+    }
+};
+
 pub fn main(init: std.process.Init) !void {
     const io = init.io;
     const allocator = init.gpa;
-    const random_source: std.Random.IoSource = .{ .io = io };
-    const random = random_source.interface();
+    const options = try Options.parse(io, init.minimal.args, allocator);
+
+    const io_source: std.Random.IoSource = .{ .io = io };
+    var prng: std.Random.DefaultPrng = .init(options.seed orelse 0);
+    const random = if (options.seed != null) prng.random() else io_source.interface();
 
     var buffer: [1024]u8 = undefined;
     var tty = try vaxis.Tty.init(io, &buffer);
@@ -65,8 +124,10 @@ pub fn main(init: std.process.Init) !void {
     defer loop.stop();
 
     try vx.enterAltScreen(tty.writer());
-    try vx.queryTerminal(tty.writer(), .fromSeconds(1));
-    try vx.setMouseMode(tty.writer(), true);
+    if (!options.headless) {
+        try vx.queryTerminal(tty.writer(), .fromSeconds(1));
+        try vx.setMouseMode(tty.writer(), true);
+    }
 
     var simulation: gameoflife.Simulation = .empty;
     defer simulation.deinit(allocator);
@@ -74,8 +135,18 @@ pub fn main(init: std.process.Init) !void {
     var paused = false;
     var speed: usize = default_speed;
     var next_step = std.Io.Timestamp.now(io, .awake);
+    const deadline: ?std.Io.Timestamp = if (options.duration) |seconds|
+        next_step.addDuration(.fromSeconds(seconds))
+    else
+        null;
 
     main_loop: while (true) {
+        if (deadline) |d| {
+            if (std.Io.Timestamp.now(io, .awake).durationTo(d).nanoseconds <= 0) {
+                break :main_loop;
+            }
+        }
+
         // Drain every pending event so fast mouse drags don't back up the queue.
         while (try loop.tryEvent()) |event| {
             switch (event) {
